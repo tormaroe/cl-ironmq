@@ -3,9 +3,9 @@
 (asdf:defsystem :cl-ironmq
   :version "0.1.0"
   :license "MIT"
-  :description ""
+  :description "Client for IronMQ (http://www.iron.io)"
   :long-description ""
-  :depends-on ()
+  :depends-on (:drakma)
   :serial t
   :components ((:static-file "README.md")
                (:static-file "LICENSE")
