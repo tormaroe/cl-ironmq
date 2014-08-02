@@ -1,4 +1,4 @@
-
+(in-package :asdf-user)
 
 (asdf:defsystem :cl-ironmq
   :version "0.1.0"

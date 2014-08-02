@@ -8,4 +8,7 @@
   
    ;;
    :make-client
+   
+   ;;
+   :post-message
    ))
