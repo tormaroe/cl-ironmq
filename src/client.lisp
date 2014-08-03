@@ -114,3 +114,8 @@ Options can be:
 
 (defun get-message (client queue)
   (car (get-messages client queue 1)))
+
+(defun delete-message (client queue message)
+  (let ((endpoint (concatenate 'string "/queues/" queue "/messages/" 
+			       (st-json:getjso "id" message))))
+    (request client :DELETE endpoint nil)))

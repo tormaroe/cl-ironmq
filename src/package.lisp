@@ -25,4 +25,5 @@
    ;;
    :post-messages
    :post-message
+   :delete-message
    ))
