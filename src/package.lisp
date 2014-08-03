@@ -19,6 +19,8 @@
    ;;
    :queues
    :queue-size
+   :get-messages
+   :get-message
 
    ;;
    :post-messages

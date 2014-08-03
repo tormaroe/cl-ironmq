@@ -105,3 +105,12 @@ Options can be:
 (defun post-message (client queue message)
   ""
   (car (post-messages client queue message)))
+
+(defun get-messages (client queue n)
+  (let* ((endpoint (concatenate 'string "/queues/" queue "/messages?n=" 
+				(write-to-string n)))
+	 (result (request client :GET endpoint nil)))
+    (st-json:getjso "messages" result)))
+
+(defun get-message (client queue)
+  (car (get-messages client queue 1)))
