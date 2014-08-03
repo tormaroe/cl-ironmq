@@ -3,6 +3,7 @@
 ;; TO BE REMOVED !!!!
 (defvar test-project-id "53d804f2da916e00090000a5")
 (defvar test-token "_1ifGppESVpqirvupNodCI0deDQ")
+(setf drakma:*header-stream* *standard-output*)
 
 (defvar *user-agent* 
   (format nil "cl-ironmq (~A)"
@@ -43,13 +44,34 @@ Options can be:
   options)
 
 (defun request (client method endpoint body)
-  ""
-  nil)
+  (let* ((path (format nil "/~A/projects/~A~A"
+		       (getf client :api-version)
+		       (getf client :project-id)
+		       endpoint))
+	 (url (format nil "~A://~A:~A~A" 
+		      (getf client :scheme)
+		      (getf client :host)
+		      (getf client :port)
+		      path))
+	 (request-headers `((:Authorization . ,(format nil "OAuth ~A" 
+						       (getf client :token))))))
+    (multiple-value-bind (result code headers)
+	(drakma:http-request url
+			     :method method
+			     ; set content if needed
+			     :content-type "application/json"
+			     :user-agent *user-agent*
+			     :additional-headers request-headers
+			     :want-stream t)
+      (format nil "RESULT: ~A ~A" code headers)
+      (cond
+	((eq code 200) (st-json:read-json result))
+	(t "SOMETHING BAD HAPPENED")))))
 
 (defun queues (client)
   "Returns a list of queues that a client has access to."
-  (mapcar (lambda (q) (getf q "name"))
-	  (request client "GET" "/queues" nil)))
+  (mapcar (lambda (q) (st-json:getjso "name" q))
+	  (request client :GET "/queues" nil)))
 
 (defun queue-size (client queue)
   ""

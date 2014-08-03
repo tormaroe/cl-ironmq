@@ -2,13 +2,23 @@
 
 (defpackage :cl-ironmq
   (:use :common-lisp 
-        :drakma)
+        :drakma
+	:st-json)
         
   (:export
   
    ;;
+   *user-agent*
+
+   ;;
    :make-client
+
+   ;;
+   :request
    
+   ;;
+   :queues
+
    ;;
    :post-message
    ))

@@ -5,7 +5,7 @@
   :license "MIT"
   :description "Client for IronMQ (http://www.iron.io)"
   :long-description ""
-  :depends-on (:drakma)
+  :depends-on (:drakma :st-json)
   :serial t
   :components ((:static-file "README.md")
                (:static-file "LICENSE")
