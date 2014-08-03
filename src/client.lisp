@@ -49,7 +49,7 @@ Options can be:
 (defun make-message (body &rest options)
   ""
   (setf (getf options :body) body)
-  (dbg "make-message" (apply #'st-json:jso (plist-keywords-to-strings options))))
+  (apply #'st-json:jso (plist-keywords-to-strings options)))
 
 (defun make-message-if-needed (m)
   (if (stringp m)
@@ -68,8 +68,6 @@ Options can be:
 		      path))
 	 (request-headers `((:Authorization . ,(format nil "OAuth ~A" 
 						       (getf client :token))))))
-    (dbg "BODY (RAW)" body)
-    (dbg "BODY (JSO)" (st-json:write-json-to-string body))
     (multiple-value-bind (result code headers)
 	(drakma:http-request url
 			     :method method
@@ -83,20 +81,29 @@ Options can be:
 	((eq code 200) (st-json:read-json result))
 	(t "SOMETHING BAD HAPPENED")))))
 
+(defun resource (&key queue (messages nil) message n)
+  (concatenate 'string
+	       "/queues" 
+	       (if queue (format nil "/~A" queue))
+	       (if (or messages message) "/messages")
+	       (if message (format nil "/~A" message))
+	       (if n (format nil "?n=~A" n))))
+
 (defun queues (client)
   "Returns a list of queues that a client has access to."
   (mapcar (lambda (q) (st-json:getjso "name" q))
-	  (request client :GET "/queues" nil)))
+	  (request client :GET (resource) nil)))
 
 (defun queue-size (client queue)
   ""
-  (let* ((endpoint (concatenate 'string "/queues/" queue))
+  (let* ((endpoint (resource :queue queue))
 	 (result (request client :GET endpoint nil)))
     (st-json:getjso "size" result)))
 
 (defun post-messages (client queue &rest messages)
   ""
-  (let* ((endpoint (concatenate 'string "/queues/" queue "/messages"))
+  (let* ((endpoint (resource :queue queue 
+			     :messages t))
 	 (messages (mapcar #'make-message-if-needed messages))
 	 (result (request client :POST endpoint
 			  (st-json:jso "messages" messages))))
@@ -107,8 +114,9 @@ Options can be:
   (car (post-messages client queue message)))
 
 (defun get-messages (client queue n)
-  (let* ((endpoint (concatenate 'string "/queues/" queue "/messages?n=" 
-				(write-to-string n)))
+  (let* ((endpoint (resource :queue queue 
+			     :messages t 
+			     :n n))
 	 (result (request client :GET endpoint nil)))
     (st-json:getjso "messages" result)))
 
@@ -116,6 +124,6 @@ Options can be:
   (car (get-messages client queue 1)))
 
 (defun delete-message (client queue message)
-  (let ((endpoint (concatenate 'string "/queues/" queue "/messages/" 
-			       (st-json:getjso "id" message))))
+  (let ((endpoint (resource :queue queue 
+			    :message (st-json:getjso "id" message))))
     (request client :DELETE endpoint nil)))
