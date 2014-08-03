@@ -22,4 +22,5 @@
 
    ;;
    :post-messages
+   :post-message
    ))

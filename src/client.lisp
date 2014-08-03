@@ -101,3 +101,7 @@ Options can be:
 	 (result (request client :POST endpoint
 			  (st-json:jso "messages" messages))))
     (st-json:getjso "ids" result)))
+
+(defun post-message (client queue message)
+  ""
+  (car (post-messages client queue message)))
