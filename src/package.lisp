@@ -18,7 +18,8 @@
    
    ;;
    :queues
+   :queue-size
 
    ;;
-   :post-message
+   :post-messages
    ))

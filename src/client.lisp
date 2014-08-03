@@ -4,6 +4,9 @@
 (defvar test-project-id "53d804f2da916e00090000a5")
 (defvar test-token "_1ifGppESVpqirvupNodCI0deDQ")
 (setf drakma:*header-stream* *standard-output*)
+(defun dbg (label value)
+  (format t "[DBG] ~A: ~A~%" label value)
+  value)
 
 (defvar *user-agent* 
   (format nil "cl-ironmq (~A)"
@@ -38,10 +41,20 @@ Options can be:
         :port port
         :max-retries max-retries))
 
+(defun plist-keywords-to-strings (pl)
+  (loop for (key val) :on pl :by #'cddr
+       :collect (string key)
+       :collect val))
+
 (defun make-message (body &rest options)
   ""
   (setf (getf options :body) body)
-  options)
+  (dbg "make-message" (apply #'st-json:jso (plist-keywords-to-strings options))))
+
+(defun make-message-if-needed (m)
+  (if (stringp m)
+      (make-message m)
+      m))
 
 (defun request (client method endpoint body)
   (let* ((path (format nil "/~A/projects/~A~A"
@@ -55,15 +68,17 @@ Options can be:
 		      path))
 	 (request-headers `((:Authorization . ,(format nil "OAuth ~A" 
 						       (getf client :token))))))
+    (dbg "BODY (RAW)" body)
+    (dbg "BODY (JSO)" (st-json:write-json-to-string body))
     (multiple-value-bind (result code headers)
 	(drakma:http-request url
 			     :method method
-			     ; set content if needed
 			     :content-type "application/json"
+			     :content (unless (null body)
+					(st-json:write-json-to-string body))
 			     :user-agent *user-agent*
 			     :additional-headers request-headers
 			     :want-stream t)
-      (format nil "RESULT: ~A ~A" code headers)
       (cond
 	((eq code 200) (st-json:read-json result))
 	(t "SOMETHING BAD HAPPENED")))))
@@ -75,8 +90,14 @@ Options can be:
 
 (defun queue-size (client queue)
   ""
-  nil)
+  (let* ((endpoint (concatenate 'string "/queues/" queue))
+	 (result (request client :GET endpoint nil)))
+    (st-json:getjso "size" result)))
 
 (defun post-messages (client queue &rest messages)
   ""
-  messages)
+  (let* ((endpoint (concatenate 'string "/queues/" queue "/messages"))
+	 (messages (mapcar #'make-message-if-needed messages))
+	 (result (request client :POST endpoint
+			  (st-json:jso "messages" messages))))
+    (st-json:getjso "ids" result)))
