@@ -1,5 +1,7 @@
 (in-package :cl-ironmq)
 
+;; TODO: SPlit into 1 file for public API functions, 1 file for core stuff
+
 ;; TO BE REMOVED !!!!
 (defvar test-project-id "53d804f2da916e00090000a5")
 (defvar test-token "_1ifGppESVpqirvupNodCI0deDQ")
@@ -82,6 +84,7 @@ Options can be:
 	(t "SOMETHING BAD HAPPENED")))))
 
 (defun resource (&key queue (messages nil) message n)
+  "Helper function to construct resource paths"
   (concatenate 'string
 	       "/queues" 
 	       (if queue (format nil "/~A" queue))

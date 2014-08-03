@@ -16,13 +16,13 @@
    ;;
    :request
    
-   ;;
+   ;; QUERIES
    :queues
    :queue-size
    :get-messages
    :get-message
 
-   ;;
+   ;; COMMANDS
    :post-messages
    :post-message
    :delete-message
