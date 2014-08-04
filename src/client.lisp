@@ -35,6 +35,7 @@ Options can be:
 :port - the port, as an int, that the server is listening on. Defaults to 443.
 :max-retries - maximum number of retries on HTTP error 503."
   
+  ;; A "client" will just be a plist containing the connection specifics 
   (list :token token
         :project-id project-id
         :api-version api-version
@@ -105,11 +106,12 @@ Options can be:
 
 (defun post-messages (client queue &rest messages)
   ""
-  (let* ((endpoint (resource :queue queue 
-			     :messages t))
-	 (messages (mapcar #'make-message-if-needed messages))
-	 (result (request client :POST endpoint
-			  (st-json:jso "messages" messages))))
+  (let ((result (request client 
+			 :POST (resource :queue queue 
+					 :messages t)
+			 (st-json:jso "messages" 
+				      (mapcar #'make-message-if-needed 
+					      messages)))))
     (st-json:getjso "ids" result)))
 
 (defun post-message (client queue message)
@@ -117,10 +119,11 @@ Options can be:
   (car (post-messages client queue message)))
 
 (defun get-messages (client queue n)
-  (let* ((endpoint (resource :queue queue 
-			     :messages t 
-			     :n n))
-	 (result (request client :GET endpoint nil)))
+  (let ((result (request client 
+			 :GET (resource :queue queue 
+					:messages t 
+					:n n) 
+			 nil)))
     (st-json:getjso "messages" result)))
 
 (defun get-message (client queue)
