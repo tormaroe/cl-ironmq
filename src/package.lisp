@@ -26,6 +26,9 @@
    :get-message
    ; TODO :get-message-by-id
 
+   :message-id     ; access id slot of message struct
+   :message-body   ; access body slot of message struct
+
    ;; COMMANDS
 
    ; TODO :delete-queue

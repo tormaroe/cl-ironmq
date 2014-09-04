@@ -50,7 +50,6 @@ Options can be:
        :collect val))
 
 (defun make-out-message (body &rest options)
-  ""
   (setf (getf options :body) body)
   (apply #'st-json:jso (plist-keywords-to-strings options)))
 
@@ -59,8 +58,8 @@ Options can be:
       (make-out-message m)
       m))
 
-(defstruct message
-  id
+(defstruct message 
+  id 
   body)
 
 (defun jso->message (jso)
@@ -107,13 +106,11 @@ Options can be:
 	  (request client :GET (resource) nil)))
 
 (defun queue-size (client queue)
-  ""
   (let* ((endpoint (resource :queue queue))
 	 (result (request client :GET endpoint nil)))
     (st-json:getjso "size" result)))
 
 (defun post-messages (client queue &rest messages)
-  ""
   (let ((result (request client 
 			 :POST (resource :queue queue 
 					 :messages t)
@@ -123,7 +120,6 @@ Options can be:
     (st-json:getjso "ids" result)))
 
 (defun post-message (client queue message)
-  ""
   (car (post-messages client queue message)))
 
 (defun get-messages (client queue n)
@@ -140,5 +136,5 @@ Options can be:
 
 (defun delete-message (client queue message)
   (let ((endpoint (resource :queue queue 
-			    :message (st-json:getjso "id" message))))
+			    :message (message-id message))))
     (request client :DELETE endpoint nil)))
