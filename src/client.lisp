@@ -49,15 +49,23 @@ Options can be:
        :collect (string key)
        :collect val))
 
-(defun make-message (body &rest options)
+(defun make-out-message (body &rest options)
   ""
   (setf (getf options :body) body)
   (apply #'st-json:jso (plist-keywords-to-strings options)))
 
-(defun make-message-if-needed (m)
+(defun make-out-message-if-needed (m)
   (if (stringp m)
-      (make-message m)
+      (make-out-message m)
       m))
+
+(defstruct message
+  id
+  body)
+
+(defun jso->message (jso)
+  (make-message :id (st-json:getjso "id" jso)
+		:body (st-json:getjso "body" jso)))
 
 (defun request (client method endpoint body)
   (let* ((path (format nil "/~A/projects/~A~A"
@@ -110,7 +118,7 @@ Options can be:
 			 :POST (resource :queue queue 
 					 :messages t)
 			 (st-json:jso "messages" 
-				      (mapcar #'make-message-if-needed 
+				      (mapcar #'make-out-message-if-needed 
 					      messages)))))
     (st-json:getjso "ids" result)))
 
@@ -124,7 +132,8 @@ Options can be:
 					:messages t 
 					:n n) 
 			 nil)))
-    (st-json:getjso "messages" result)))
+    (mapcar #'jso->message 
+	    (st-json:getjso "messages" result))))
 
 (defun get-message (client queue)
   (car (get-messages client queue 1)))
